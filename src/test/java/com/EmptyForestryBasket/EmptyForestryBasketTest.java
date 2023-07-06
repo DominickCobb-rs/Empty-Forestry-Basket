@@ -1,4 +1,4 @@
-package com.ForestryBasketBankSwap;
+package com.EmptyForestryBasket;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;

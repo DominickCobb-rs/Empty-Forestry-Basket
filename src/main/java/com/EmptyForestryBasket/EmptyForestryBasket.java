@@ -1,6 +1,4 @@
-package com.ForestryBasketBankSwap;
-
-import com.google.inject.Provides;
+package com.EmptyForestryBasket;
 
 import net.runelite.api.ItemID;
 import net.runelite.api.MenuEntry;
