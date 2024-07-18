@@ -18,6 +18,8 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 
 @PluginDescriptor(
 	name = "Empty Forestry Basket",
@@ -32,6 +34,9 @@ public class EmptyForestryBasket extends Plugin
 
 	@Inject
 	public ConfigManager configManager;
+
+	@Inject
+	public TooltipManager tooltipManager;
 
 	private final String CONFIG_GROUP = "EmptyForestryBasket";
 	private final String BASKET_STATE_KEY = "BasketState";
@@ -56,18 +61,15 @@ public class EmptyForestryBasket extends Plugin
 	}
 
 	@Subscribe
-	public void onMenuOpened(MenuOpened event)
+	public void onMenuEntryAdded(MenuEntryAdded event)
 	{
 		if(!isInBank())
 			return;
-		for (MenuEntry entry : event.getMenuEntries())
+		if (FORESTRY_KIT.contains(event.getItemId()))
 		{
-			if (FORESTRY_KIT.contains(entry.getItemId()))
+			if (event.getOption().contains("Use"))
 			{
-				if (entry.getOption().contains("Use"))
-				{
-					entry.setOption(entry.getOption().replace("Use", currentKitState ? "Empty" : "Fill"));
-				}
+				event.getMenuEntry().setOption(event.getOption().replace("Use", currentKitState ? "Empty" : "Fill"));
 			}
 		}
 	}
