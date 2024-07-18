@@ -49,7 +49,7 @@ public class EmptyForestryBasket extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		if(configManager.getConfiguration(CONFIG_GROUP,BASKET_STATE_KEY)!=null)
+		if(configManager.getRSProfileConfiguration(CONFIG_GROUP,BASKET_STATE_KEY)!=null)
 			currentKitState=Boolean.parseBoolean(configManager.getConfiguration(CONFIG_GROUP,BASKET_STATE_KEY));
 		else currentKitState=false;
 	}
@@ -57,7 +57,7 @@ public class EmptyForestryBasket extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
-		configManager.setConfiguration(CONFIG_GROUP,BASKET_STATE_KEY,currentKitState);
+		configManager.setRSProfileConfiguration(CONFIG_GROUP,BASKET_STATE_KEY,currentKitState);
 	}
 
 	@Subscribe
