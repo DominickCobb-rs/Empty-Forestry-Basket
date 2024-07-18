@@ -5,21 +5,14 @@ import java.util.Set;
 import javax.inject.Inject;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
-import net.runelite.api.GameState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
-import net.runelite.api.MenuEntry;
-import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.api.events.MenuOpened;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.ui.overlay.OverlayManager;
-import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 
 @PluginDescriptor(
 	name = "Empty Forestry Basket",
@@ -35,9 +28,6 @@ public class EmptyForestryBasket extends Plugin
 	@Inject
 	public ConfigManager configManager;
 
-	@Inject
-	public TooltipManager tooltipManager;
-
 	private final String CONFIG_GROUP = "EmptyForestryBasket";
 	private final String BASKET_STATE_KEY = "BasketState";
 	private final Set<Integer> FORESTRY_KIT = ImmutableSet.of(ItemID.FORESTRY_BASKET, ItemID.OPEN_FORESTRY_BASKET, ItemID.FORESTRY_KIT);
@@ -49,9 +39,7 @@ public class EmptyForestryBasket extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
-		if(configManager.getRSProfileConfiguration(CONFIG_GROUP,BASKET_STATE_KEY)!=null)
-			currentKitState=Boolean.parseBoolean(configManager.getConfiguration(CONFIG_GROUP,BASKET_STATE_KEY));
-		else currentKitState=false;
+		currentKitState=Boolean.parseBoolean(configManager.getRSProfileConfiguration(CONFIG_GROUP,BASKET_STATE_KEY));
 	}
 
 	@Override
