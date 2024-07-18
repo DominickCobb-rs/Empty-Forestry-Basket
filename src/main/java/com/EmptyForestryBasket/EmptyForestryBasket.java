@@ -1,44 +1,94 @@
 package com.EmptyForestryBasket;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+import javax.inject.Inject;
+import net.runelite.api.ChatMessageType;
+import net.runelite.api.Client;
+import net.runelite.api.GameState;
+import net.runelite.api.InventoryID;
 import net.runelite.api.ItemID;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.ChatMessage;
+import net.runelite.api.events.ItemContainerChanged;
+import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.MenuOpened;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
 @PluginDescriptor(
 	name = "Empty Forestry Basket",
-	description = "Changes \"Use\" to \"Empty\" when banking the Forestry Basket",
-	tags = {"forestry","basket","use","empty"},
+	description = "Changes \"Use\" to \"Fill/Empty\" when banking the Forestry Basket",
+	tags = {"forestry", "basket", "use", "empty"},
 	enabledByDefault = true
 )
-public class EmptyForestryBasket extends Plugin 
+public class EmptyForestryBasket extends Plugin
 {
+	@Inject
+	public Client client;
+
+	@Inject
+	public ConfigManager configManager;
+
+	private final String CONFIG_GROUP = "EmptyForestryBasket";
+	private final String BASKET_STATE_KEY = "BasketState";
+	private final Set<Integer> FORESTRY_KIT = ImmutableSet.of(ItemID.FORESTRY_BASKET, ItemID.OPEN_FORESTRY_BASKET, ItemID.FORESTRY_KIT);
+	private final String WITHDRAW_LEAVES = "You withdraw leaves from your bank to your Forestry kit.";
+	private final String EMPTY_LEAVES = "You deposit leaves from your Forestry kit into your bank.";
+	private final String EMPTY_KIT = "The forestry kit is now empty.";
+	private boolean currentKitState; // false has no leaves true has leaves
+
+	@Override
+	protected void startUp() throws Exception
+	{
+		if(configManager.getConfiguration(CONFIG_GROUP,BASKET_STATE_KEY)!=null)
+			currentKitState=Boolean.parseBoolean(configManager.getConfiguration(CONFIG_GROUP,BASKET_STATE_KEY));
+		else currentKitState=false;
+	}
+
+	@Override
+	protected void shutDown() throws Exception
+	{
+		configManager.setConfiguration(CONFIG_GROUP,BASKET_STATE_KEY,currentKitState);
+	}
+
 	@Subscribe
 	public void onMenuOpened(MenuOpened event)
 	{
-		final MenuEntry[] entries = event.getMenuEntries();
-		if (entries[1].getItemId() == ItemID.FORESTRY_BASKET || entries[1].getItemId() == ItemID.OPEN_FORESTRY_BASKET) 
+		if(!isInBank())
+			return;
+		for (MenuEntry entry : event.getMenuEntries())
 		{
-			boolean inBank = false;
-			int useIndex = -1;
-			for (int idx = entries.length - 1; idx >= 0; --idx) 
+			if (FORESTRY_KIT.contains(entry.getItemId()))
 			{
-				final MenuEntry entry = entries[idx];
-				if (entry.getOption().contains("Deposit")) 
+				if (entry.getOption().contains("Use"))
 				{
-					inBank = true;
+					entry.setOption(entry.getOption().replace("Use", currentKitState ? "Empty" : "Fill"));
 				}
-
-				if (entry.getOption().contains("Use")) {
-					useIndex = idx;
-				}
-			}
-
-			if (inBank && useIndex != -1) {
-				entries[useIndex].setOption(entries[useIndex].getOption().replace("Use", "Empty"));
 			}
 		}
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if(event.getType()!= ChatMessageType.GAMEMESSAGE)
+			return;
+		if(event.getMessage().equalsIgnoreCase(EMPTY_LEAVES) || event.getMessage().equalsIgnoreCase(EMPTY_KIT))
+		{
+			currentKitState=false;
+		}
+		if(event.getMessage().equalsIgnoreCase(WITHDRAW_LEAVES) || event.getMessage().contains("leaves fall to the ground and you place them into your Forestry kit."))
+		{
+			currentKitState=true;
+		}
+	}
+
+	private boolean isInBank()
+	{
+		return client.getItemContainer(InventoryID.BANK)!=null;
 	}
 }
